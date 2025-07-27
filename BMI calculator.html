@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator BMI</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        :root {
+            --primary-color: #3a7bd5;
+            --secondary-color: #3a60d5;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --light-text-color: #666;
+            --border-color: #e0e0e0;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .calculator-card, .history-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 25px 30px;
+            transition: all 0.3s ease;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        h1 { font-size: 2rem; }
+        h2 { font-size: 1.5rem; }
+
+        .unit-switcher {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        .unit-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            color: var(--light-text-color);
+            transition: all 0.3s ease;
+        }
+
+        .unit-btn.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(58, 123, 213, 0.5);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--light-text-color);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.8rem;
+            height: 1rem;
+            margin-top: 4px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex-grow: 1;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-calculate {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            opacity: 0.9;
+            box-shadow: 0 4px 10px rgba(58, 123, 213, 0.5);
+        }
+
+        .btn-reset {
+            background-color: #f1f3f5;
+            color: var(--light-text-color);
+        }
+        .btn-reset:hover {
+            background-color: #e9ecef;
+        }
+
+        .result-area {
+            margin-top: 25px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            height: 0;
+            overflow: hidden;
+        }
+        .result-area.show {
+            opacity: 1;
+            transform: translateY(0);
+            height: auto;
+        }
+
+        .bmi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .bmi-category {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .bmi-bar-container {
+            width: 100%;
+            background-color: var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+            display: flex;
+            height: 25px;
+        }
+
+        .bmi-bar {
+            height: 100%;
+            text-align: center;
+            color: white;
+            font-size: 0.8rem;
+            line-height: 25px;
+            font-weight: 600;
+        }
+        
+        #bar-underweight { background-color: var(--info-color); width: 18.5%; }
+        #bar-normal { background-color: var(--success-color); width: 6.4%; }
+        #bar-overweight { background-color: var(--warning-color); width: 4.9%; }
+        #bar-obese { background-color: var(--danger-color); width: 70.2%; }
+        
+        .indicator-container {
+            position: relative;
+            height: 10px;
+            margin-top: -5px;
+        }
+
+        .bmi-indicator {
+            position: absolute;
+            top: -5px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid #333;
+            transform: translateX(-50%);
+            transition: left 0.5s ease;
+        }
+        
+        .history-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .btn-clear-history {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn-clear-history:hover {
+            opacity: 0.85;
+        }
+
+        #history-list {
+            list-style: none;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        #no-history {
+            text-align: center;
+            color: var(--light-text-color);
+            padding: 20px;
+        }
+
+        @media (min-width: 840px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="calculator-card">
+        <h1>Kalkulator BMI</h1>
+        
+        <div class="unit-switcher">
+            <button class="unit-btn active" id="metric-btn">Metric (kg, cm)</button>
+            <button class="unit-btn" id="imperial-btn">Imperial (lbs, in)</button>
+        </div>
+
+        <form id="bmi-form">
+            <div class="input-group">
+                <label for="weight">Berat (<span class="unit-label">kg</span>)</label>
+                <input type="text" id="weight" class="input-field" placeholder="Masukkan berat badan Anda">
+                <div class="error-message" id="weight-error"></div>
+            </div>
+            
+            <div class="input-group">
+                <label for="height">Tinggi (<span class="unit-label">cm</span>)</label>
+                <input type="text" id="height" class="input-field" placeholder="Masukkan tinggi badan Anda">
+                <div class="error-message" id="height-error"></div>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-calculate">Hitung BMI</button>
+                <button type="button" class="btn btn-reset" id="reset-btn">Reset</button>
+            </div>
+        </form>
+
+        <div class="result-area" id="result-area">
+            <p>BMI Anda adalah</p>
+            <div class="bmi-value" id="bmi-value">0.0</div>
+            <div class="bmi-category" id="bmi-category">Kategori</div>
+            
+            <div class="indicator-container">
+                <div class="bmi-indicator" id="bmi-indicator"></div>
+            </div>
+            <div class="bmi-bar-container">
+                <div class="bmi-bar" id="bar-underweight" title="Underweight < 18.5"></div>
+                <div class="bmi-bar" id="bar-normal" title="Normal 18.5 - 24.9"></div>
+                <div class="bmi-bar" id="bar-overweight" title="Overweight 25 - 29.9"></div>
+                <div class="bmi-bar" id="bar-obese" title="Obese ≥ 30"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="history-card">
+        <div class="history-controls">
+            <h2>Riwayat Perhitungan</h2>
+            <button id="clear-history-btn" class="btn-clear-history">Hapus Riwayat</button>
+        </div>
+        <ul id="history-list">
+            <li id="no-history">Belum ada riwayat.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
+    const metricBtn = document.getElementById('metric-btn');
+    const imperialBtn = document.getElementById('imperial-btn');
+    const unitLabels = document.querySelectorAll('.unit-label');
+    const weightInput = document.getElementById('weight');
+    const heightInput = document.getElementById('height');
+    const weightError = document.getElementById('weight-error');
+    const heightError = document.getElementById('height-error');
+    const form = document.getElementById('bmi-form');
+    const resetBtn = document.getElementById('reset-btn');
+    const resultArea = document.getElementById('result-area');
+    const bmiValueEl = document.getElementById('bmi-value');
+    const bmiCategoryEl = document.getElementById('bmi-category');
+    const bmiIndicator = document.getElementById('bmi-indicator');
+    const historyList = document.getElementById('history-list');
+    const clearHistoryBtn = document.getElementById('clear-history-btn');
+    const noHistoryEl = document.getElementById('no-history');
+
+    let currentUnit = 'metric'; // 'metric' or 'imperial'
+    let bmiHistory = JSON.parse(localStorage.getItem('bmiHistory')) || [];
+
+    // --- Unit Switching ---
+    function setUnit(unit) {
+        currentUnit = unit;
+        if (unit === 'metric') {
+            metricBtn.classList.add('active');
+            imperialBtn.classList.remove('active');
+            unitLabels[0].textContent = 'kg';
+            unitLabels[1].textContent = 'cm';
+            weightInput.placeholder = "Masukkan berat badan Anda";
+            heightInput.placeholder = "Masukkan tinggi badan Anda";
+        } else {
+            imperialBtn.classList.add('active');
+            metricBtn.classList.remove('active');
+            unitLabels[0].textContent = 'lbs';
+            unitLabels[1].textContent = 'in';
+            weightInput.placeholder = "Enter your weight";
+            heightInput.placeholder = "Enter your height";
+        }
+        resetForm();
+    }
+
+    metricBtn.addEventListener('click', () => setUnit('metric'));
+    imperialBtn.addEventListener('click', () => setUnit('imperial'));
+
+    // --- Form Submission and Calculation ---
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (validateInputs()) {
+            calculateBMI();
+        }
+    });
+
+    // --- Input Validation ---
+    function validateInputs() {
+        let isValid = true;
+        const weight = parseFloat(weightInput.value);
+        const height = parseFloat(heightInput.value);
+
+        // Clear previous errors
+        weightError.textContent = '';
+        heightError.textContent = '';
+        weightInput.style.borderColor = 'var(--border-color)';
+        heightInput.style.borderColor = 'var(--border-color)';
+
+        if (isNaN(weight) || weight <= 0) {
+            weightError.textContent = 'Masukkan berat yang valid.';
+            weightInput.style.borderColor = 'var(--danger-color)';
+            isValid = false;
+        }
+        if (isNaN(height) || height <= 0) {
+            heightError.textContent = 'Masukkan tinggi yang valid.';
+            heightInput.style.borderColor = 'var(--danger-color)';
+            isValid = false;
+        }
+        return isValid;
+    }
+
+    // --- BMI Calculation ---
+    function calculateBMI() {
+        const weight = parseFloat(weightInput.value);
+        const height = parseFloat(heightInput.value);
+        let bmi;
+
+        if (currentUnit === 'metric') {
+            // BMI = weight (kg) / (height (m))^2
+            const heightInMeters = height / 100;
+            bmi = weight / (heightInMeters * heightInMeters);
+        } else {
+            // BMI = 703 * weight (lbs) / (height (in))^2
+            bmi = 703 * (weight / (height * height));
+        }
+        
+        displayResult(bmi);
+        saveToHistory(weight, height, bmi);
+    }
+    
+    // --- Display Result ---
+    function displayResult(bmi) {
+        const roundedBmi = bmi.toFixed(1);
+        bmiValueEl.textContent = roundedBmi;
+
+        const { category, color } = getBMICategory(bmi);
+        bmiCategoryEl.textContent = category;
+        bmiCategoryEl.style.color = color;
+
+        updateIndicator(bmi);
+
+        resultArea.classList.add('show');
+    }
+    
+    function getBMICategory(bmi) {
+        if (bmi < 18.5) return { category: 'Underweight', color: 'var(--info-color)' };
+        if (bmi >= 18.5 && bmi <= 24.9) return { category: 'Normal Weight', color: 'var(--success-color)' };
+        if (bmi >= 25 && bmi <= 29.9) return { category: 'Overweight', color: 'var(--warning-color)' };
+        return { category: 'Obese', color: 'var(--danger-color)' };
+    }
+    
+    // --- Visual Indicator Update ---
+    function updateIndicator(bmi) {
+        let percentage;
+        // Scale: underweight up to 18.5, normal up to 25, overweight up to 30, obese > 30. Max display at 40.
+        if (bmi < 18.5) {
+            percentage = (bmi / 18.5) * 18.5; 
+        } else if (bmi < 25) {
+            percentage = 18.5 + ((bmi - 18.5) / (25 - 18.5)) * 6.4;
+        } else if (bmi < 30) {
+            percentage = 18.5 + 6.4 + ((bmi - 25) / (30 - 25)) * 4.9;
+        } else {
+            percentage = 18.5 + 6.4 + 4.9 + ((Math.min(bmi, 40) - 30) / (40 - 30)) * 70.2;
+        }
+        
+        percentage = Math.min(Math.max(percentage, 0), 100); // Clamp between 0 and 100
+        bmiIndicator.style.left = `${percentage}%`;
+    }
+
+    // --- Reset Functionality ---
+    resetBtn.addEventListener('click', resetForm);
+
+    function resetForm() {
+        form.reset();
+        resultArea.classList.remove('show');
+        weightError.textContent = '';
+        heightError.textContent = '';
+        weightInput.style.borderColor = 'var(--border-color)';
+        heightInput.style.borderColor = 'var(--border-color)';
+    }
+
+    // --- History Management ---
+    function saveToHistory(weight, height, bmi) {
+        const { category } = getBMICategory(bmi);
+        const record = {
+            unit: currentUnit,
+            weight: `${weight} ${currentUnit === 'metric' ? 'kg' : 'lbs'}`,
+            height: `${height} ${currentUnit === 'metric' ? 'cm' : 'in'}`,
+            bmi: bmi.toFixed(1),
+            category,
+            date: new Date().toLocaleString('id-ID')
+        };
+        bmiHistory.unshift(record); // Add to the beginning
+        if (bmiHistory.length > 10) {
+            bmiHistory.pop(); // Keep history to a max of 10 entries
+        }
+        localStorage.setItem('bmiHistory', JSON.stringify(bmiHistory));
+        renderHistory();
+    }
+
+    function renderHistory() {
+        historyList.innerHTML = ''; // Clear current list
+        if (bmiHistory.length === 0) {
+            historyList.appendChild(noHistoryEl);
+            clearHistoryBtn.style.display = 'none';
+        } else {
+            clearHistoryBtn.style.display = 'block';
+            bmiHistory.forEach(record => {
+                const li = document.createElement('li');
+                li.classList.add('history-item');
+                li.innerHTML = `
+                    <span>
+                        <strong>${record.bmi}</strong> (${record.category}) - ${record.weight}, ${record.height}
+                    </span>
+                    <small>${record.date}</small>
+                `;
+                historyList.appendChild(li);
+            });
+        }
+    }
+    
+    clearHistoryBtn.addEventListener('click', () => {
+        if(confirm('Apakah Anda yakin ingin menghapus semua riwayat?')) {
+            bmiHistory = [];
+            localStorage.removeItem('bmiHistory');
+            renderHistory();
+        }
+    });
+
+    // Initial Load
+    setUnit('metric'); // Set default unit
+    renderHistory();
+});
+</script>
+
+</body>
+</html>
